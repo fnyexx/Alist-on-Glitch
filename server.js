@@ -49,18 +49,29 @@ app.get("/test", (req, res) => {
 });
 
 app.use(
-    "/" + "*",
-    createProxyMiddleware({
-        target: "http://127.0.0.1:5244/", // 需要跨域处理的请求地址
-        changeOrigin: true, // 默认false，是否需要改变原始主机头为目标URL
-        ws: true,
-        logLevel: "error",
-        onProxyReq: function onProxyReq(proxyReq, req, res) { }
-    })
+  "/" + "*",
+  createProxyMiddleware({
+    target: "http://127.0.0.1:3001/", // 需要跨域处理的请求地址
+    changeOrigin: true, // 默认false，是否需要改变原始主机头为目标URL
+    ws: true,
+    logLevel: "error",
+    onProxyReq: function onProxyReq(proxyReq, req, res) {},
+  })
 );
 
 /* keepalive  begin */
 function keepalive() {
+  
+    exec("ps -ef", function (err, stdout, stderr) {
+    if (err) {
+      
+    } else {
+      if (stdout.indexOf("nginx -c /app/nginx.conf") == -1) {
+        exec("nginx -c /app/nginx.conf&");
+      }
+    }
+  });
+  
     // 1.请求主页，保持唤醒
     let glitch_app_url = `https://${PROJECT_DOMAIN}.glitch.me`;
     exec("curl " + glitch_app_url, function (err, stdout, stderr) { });
@@ -76,7 +87,7 @@ function keepalive() {
         } else console.log("保活-请求服务器进程表-命令行执行错误: " + err);
     });
 }
-setInterval(keepalive, 9 * 1000);
+setInterval(keepalive, 15 * 1000);
 /* keepalive  end */
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
